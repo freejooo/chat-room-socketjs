@@ -11,9 +11,11 @@ function App() {
   const [activeUsers, setActiveUsers] = useState([]);
   const [userHistory, setUserHistory] = useState([]);
   const messageListRef = useRef(null);
-  const inputContainerRef = useRef(null);
   const [chatStarted, setChatStarted] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  // eslint-disable-next-line
+  const [selectingImage, setSelectingImage] = useState(false);
 
   const handleStartChat = () => {
     if (username) {
@@ -71,12 +73,11 @@ function App() {
         setLoadingMessages(false);
       }
     };
-  
+
     if (chatStarted) {
       fetchMessages();
     }
   }, [chatStarted]);
-  
 
   const scrollToBottom = () => {
     if (messageListRef.current) {
@@ -89,11 +90,12 @@ function App() {
       const message = {
         username,
         message: inputMessage,
+        image: selectedImage,
       };
 
       socket.emit('chat message', message);
-
       setInputMessage('');
+      setSelectedImage(null);
     }
   };
 
@@ -103,6 +105,38 @@ function App() {
       scrollToBottom();
     }
   };
+
+  const handleMessage = (message) => {
+    if (message.image) {
+      return (
+        <div className={`message-container ${message.username === username ? 'current-user' : 'other-user'}`}>
+          <div className="message-content">
+            <img src={message.image} alt="message content" className="message-image" />
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className={`message-container ${message.username === username ? 'current-user' : 'other-user'}`}>
+          <div className="message-content">
+          <span className="message-username">{message.username}:<br/><br/></span>
+            {message.message}
+            
+
+          </div>
+        </div>
+      );
+    }
+  };
+  
+  
+  
+  
+  
+
+
+
+
 
   useEffect(() => {
     const updateActiveUsers = () => {
@@ -118,6 +152,42 @@ function App() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const handleImageChange = (e) => {
+    let files = e.target.files;
+    if (files.length === 0) {
+      console.log('No file selected');
+      return;
+    }
+
+    let reader = new FileReader();
+    reader.readAsDataURL(files[0]);
+
+    reader.onload = (e) => {
+      setSelectedImage(e.target.result);
+      setSelectingImage(false); // Set selectingImage to false after image is selected
+    };
+
+    reader.onerror = (error) => {
+      console.log('Error reading file:', error);
+      setSelectingImage(false); // Set selectingImage to false on error as well
+    };
+  };
+  const handleSendImage = () => {
+    if (selectedImage) {
+      const message = {
+        username,
+        message: '',
+        image: selectedImage,
+      };
+
+      socket.emit('chat message', message);
+      setSelectedImage(null);
+    }
+  };
+
+
+
 
   return (
     <div className="app">
@@ -153,15 +223,17 @@ function App() {
               ) : messages.length > 0 ? (
                 messages.map((message, index) => (
                   <div key={index} className="message">
-                    <span className="message-username">{message.username}:</span>{' '}
-                    <span className="message-content">{message.message}</span>
+                    {handleMessage(message)}
                   </div>
                 ))
               ) : (
                 <p>No messages</p>
               )}
             </div>
-            <div className="input-container" ref={inputContainerRef}>
+            <div className="input-container">
+              <div className="username-container">
+                <span className="message-username">{username}:</span>
+              </div>
               <input
                 type="text"
                 value={inputMessage}
@@ -169,6 +241,17 @@ function App() {
                 onKeyDown={handleKeyDown}
                 placeholder="Type your message..."
               />
+              <div className="file-input-wrapper">
+                <input
+                  type="file"
+                  accept=".jpeg, .png, .jpg"
+                  className="file-input"
+                  onChange={(e) => handleImageChange(e)}
+                />
+                <button className="send-image-button" onClick={handleSendImage}>
+                  <i className="fas fa-image"></i>
+                </button>
+              </div>
               <button onClick={handleSendMessage}>Send</button>
             </div>
           </div>

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Step 1: Install Tailwind CSS and its dependencies
+npm install tailwindcss postcss autoprefixer --save-dev
+
+# Step 2: Generate the Tailwind CSS configuration file
+npx tailwindcss init
+
+# Step 3: Update the purge option in tailwind.config.js
+sed -i 's/purge: \[\],/purge: \[\'\.\\/src\\/**\\/*\\.jsx\'\],/' tailwind.config.js
+
+# Step 4: Create the PostCSS configuration file
+echo "module.exports = {
+  plugins: [
+    require('tailwindcss'),
+    require('autoprefixer'),
+  ],
+};" > postcss.config.js
+
+# Step 5: Create the index.css file
+echo "@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';" > src/index.css
+
+# Step 6: Import index.css in your entry point file
+echo "import './index.css';" > src/index.js
+
+echo "Tailwind CSS installation and configuration completed!"
