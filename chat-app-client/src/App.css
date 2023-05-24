@@ -289,25 +289,38 @@ body {
 .send-image-button {
   padding: 8px 16px;
 }
-.message-container {
+.message-list {
   display: flex;
-  align-items: center;
-  padding: 8px;
-  margin-bottom: 8px;
-  border-radius: 4px;
+  flex-direction: column;
+  width: 100%;
+}
+
+.message-container {
+  display: inline-block; /* The width is now relative to the content */
+  padding: 10px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+  clear: both; /* Clear floats */
 }
 
 .current-user {
-  background-color: #7d7d7d;
-  color: white;
-  float: right;
-  width: 50%;
+  float: right; /* This will make the current user's messages float to the right */
+  background-color: #007bff;
+  color: #fff;
 }
 
 .other-user {
-  background-color: #c5baba;
-  width: 50%;
+  float: left; /* This will make the other users' messages float to the left */
+  background-color: #f0f0f0;
 }
+
+.message-image {
+  max-width: 300px; /* adjust as needed */
+  max-height: 400px; /* adjust as needed */
+}
+
+
+
 
 .message-content {
   flex-grow: 1;
@@ -328,5 +341,11 @@ body {
 .message-image:hover {
   transform: scale(1.2); /* Increase the scale value as desired */
 }
+
+/* .message-list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+} */
 
 
