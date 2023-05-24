@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
 import io from 'socket.io-client';
 import './App.css';
+import Linkify from 'react-linkify';
+import ReactLinkPreview from 'react-link-preview';
+import { BrowserRouter as Router } from 'react-router-dom';
 
 const socket = io('http://localhost:3002');
 
@@ -14,8 +17,8 @@ function App() {
   const [chatStarted, setChatStarted] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  // eslint-disable-next-line
-  const [selectingImage, setSelectingImage] = useState(false);
+  const [modalImage, setModalImage] = useState(null);
+  const [selectingImage, setSelectingImage] = useState(false); // Add this line
 
   const handleStartChat = () => {
     if (username) {
@@ -105,34 +108,68 @@ function App() {
       scrollToBottom();
     }
   };
+
   const handleMessage = (message) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const url = message.message.match(urlRegex);
     if (message.image) {
       return (
-        <div className={`message-container ${message.username === username ? 'current-user' : 'other-user'}`}>
-        {message.username !== username && (
-          <span className="message-username">{message.username}:</span>
-        )}
-        <div className="message-content">
-          <a href={message.image} target="_blank" rel="noopener noreferrer">
-            <img src={message.image} alt="message content" className="message-image" />
-          </a>
-        </div>
-      </div>
-    );
-    } else {
-      return (
-        <div className={`message-container ${message.username === username ? 'current-user' : 'other-user'}`}>
+        <div
+          className={`message-container ${
+            message.username === username ? 'current-user' : 'other-user'
+          }`}
+        >
           {message.username !== username && (
-            <span className="message-username">{message.username}:</span>
+            <Linkify className="linkify-link">{message.message}</Linkify>
+
           )}
           <div className="message-content">
-            {message.message}<br />
+            <img
+              src={message.image}
+              alt="message content"
+              className="message-image"
+              onClick={() => setModalImage(message.image)}
+            />
           </div>
         </div>
       );
-    }
-  };
-  
+    } 
+      else if (url) {
+        return (
+          <div
+            className={`message-container ${
+              message.username === username ? 'current-user' : 'other-user'
+            }`}
+          >
+            {message.username !== username && (
+              <Linkify className="linkify-link">
+                <span className="red-link">{message.message}</span>
+              </Linkify>
+            )}
+            <div className="message-content">
+              <Linkify>{message.message}</Linkify>
+              <ReactLinkPreview url={url[0]} />
+            </div>
+          </div>
+        );
+      } else {
+        return (
+          <div
+            className={`message-container ${
+              message.username === username ? 'current-user' : 'other-user'
+            }`}
+          >
+            {message.username !== username && (
+              <span className="message-username">{message.username}:</span>
+            )}
+            <div className="message-content">
+              <Linkify className="red-link">{message.message}</Linkify>
+            </div>
+          </div>
+        );
+      }
+    };
+
   useEffect(() => {
     const updateActiveUsers = () => {
       const activeUsernames = userHistory
@@ -154,20 +191,19 @@ function App() {
       console.log('No file selected');
       return;
     }
-
+  
     let reader = new FileReader();
-    reader.readAsDataURL(files[0]);
-
     reader.onload = (e) => {
       setSelectedImage(e.target.result);
-      setSelectingImage(false); // Set selectingImage to false after image is selected
     };
-
+  
     reader.onerror = (error) => {
       console.log('Error reading file:', error);
-      setSelectingImage(false); // Set selectingImage to false on error as well
     };
+  
+    reader.readAsDataURL(files[0]);
   };
+  
 
   const handleSendImage = () => {
     if (selectedImage) {
@@ -183,88 +219,108 @@ function App() {
   };
 
   return (
-    <div className="app">
-      {!chatStarted ? (
-        <div className="start-chat">
-          <h1>Enter your username</h1>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Your username..."
-          />
-          <button onClick={handleStartChat}>Start Chat</button>
-        </div>
-      ) : (
-        <div className="chat-container">
-          <div className="sidebar">
-            <h2>Active Users</h2>
-            {activeUsers.length > 0 ? (
-              <ul>
-                {activeUsers.map((user) => (
-                  <li key={user}>{user}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>No active users</p>
-            )}
+    <Router>
+      <div className="app">
+        {!chatStarted ? (
+          <div className="start-chat">
+            <h1>Enter your username</h1>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Your username..."
+            />
+            <button onClick={handleStartChat}>Start Chat</button>
           </div>
-          <div className="chat">
-            <div className="message-list" ref={messageListRef}>
-              {loadingMessages ? (
-                <p>Loading messages...</p>
-              ) : messages.length > 0 ? (
-                messages.map((message, index) => (
-                  <div key={index} className="message">
-                    {handleMessage(message)}
-                  </div>
-                ))
+        ) : (
+          <div className="chat-container">
+            <div className="sidebar">
+              <h2>Active Users</h2>
+              {activeUsers.length > 0 ? (
+                <ul>
+                  {activeUsers.map((user) => (
+                    <li key={user}>{user}</li>
+                  ))}
+                </ul>
               ) : (
-                <p>No messages</p>
+                <p>No active users</p>
               )}
             </div>
-            <div className="input-container">
-              <div className="username-container">
-                <span className="message-username">{username}:</span>
+            <div className="chat">
+              <div className="message-list" ref={messageListRef}>
+                {loadingMessages ? (
+                  <p>Loading messages...</p>
+                ) : messages.length > 0 ? (
+                  messages.map((message, index) => (
+                    <div key={index} className="message">
+                      {handleMessage(message)}
+                    </div>
+                  ))
+                ) : (
+                  <p>No messages</p>
+                )}
               </div>
-              <input
-                type="text"
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Type your message..."
-              />
-              <div className="file-input-wrapper">
+              <div className="input-container">
+                <div className="username-container">
+                  <span className="message-username">{username}:</span>
+                </div>
                 <input
-                  type="file"
-                  accept=".jpeg, .png, .jpg"
-                  className="file-input"
-                  onChange={(e) => handleImageChange(e)}
+                  type="text"
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Type your message..."
                 />
-                <button className="send-image-button" onClick={handleSendImage}>
-                  <i className="fas fa-image"></i>
-                </button>
+                <div className="file-input-wrapper">
+                  <input
+                    type="file"
+                    accept=".jpeg, .png, .jpg"
+                    className="file-input"
+                    onChange={(e) => handleImageChange(e)}
+                  />
+                  <button
+                    className="send-image-button"
+                    onClick={handleSendImage}
+                  >
+                    <i className="fas fa-image"></i>
+                  </button>
+                </div>
+                <button onClick={handleSendMessage}>Send</button>
               </div>
-              <button onClick={handleSendMessage}>Send</button>
+            </div>
+            <div className="user-history">
+              <h2>User History</h2>
+              {userHistory.length > 0 ? (
+                <ul>
+                  {userHistory.map((user, index) => (
+                    <li key={index}>
+                      {user.username} - {user.status}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No user history</p>
+              )}
             </div>
           </div>
-          <div className="user-history">
-            <h2>User History</h2>
-            {userHistory.length > 0 ? (
-              <ul>
-                {userHistory.map((user, index) => (
-                  <li key={index}>
-                    {user.username} - {user.status}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>No user history</p>
-            )}
+        )}
+
+        {modalImage && (
+          <div
+            className="modal-background"
+            onClick={() => setModalImage(null)}
+          >
+            <div className="modal-content">
+              <img
+                src={modalImage}
+                alt="modal content"
+                className="modal-image"
+              />
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </Router>
   );
 }
 
