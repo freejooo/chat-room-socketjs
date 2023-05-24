@@ -1,3 +1,5 @@
+// server.js
+
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
@@ -55,8 +57,11 @@ io.on('connection', (socket) => {
       io.to('chat').emit('active users', Array.from(activeUsers));
       console.log(`${username} user disconnected`);
 
-      userHistory.push({ username, status: 'disconnected' });
-      io.emit('user history', userHistory);
+      const userIndex = userHistory.findIndex((user) => user.username === username);
+      if (userIndex !== -1) {
+        userHistory[userIndex].status = 'disconnected';
+        io.emit('user history', userHistory);
+      }
     }
   });
 
@@ -77,7 +82,7 @@ io.on('connection', (socket) => {
 app.get('/messages', async (req, res) => {
   const messages = await ChatMessage.find()
     .sort({ timestamp: -1 })
-    .limit(10);
+    .limit(50);
   res.json(messages.reverse());
 });
 
