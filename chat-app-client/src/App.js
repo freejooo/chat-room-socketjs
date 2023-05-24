@@ -119,10 +119,7 @@ function App() {
       return (
         <div className={`message-container ${message.username === username ? 'current-user' : 'other-user'}`}>
           <div className="message-content">
-          <span className="message-username">{message.username}:<br/><br/></span>
             {message.message}
-            
-
           </div>
         </div>
       );
@@ -223,6 +220,7 @@ function App() {
               ) : messages.length > 0 ? (
                 messages.map((message, index) => (
                   <div key={index} className="message">
+                    <span className="message-username">{message.username}:</span>{' '}
                     {handleMessage(message)}
                   </div>
                 ))
@@ -230,10 +228,7 @@ function App() {
                 <p>No messages</p>
               )}
             </div>
-            <div className="input-container">
-              <div className="username-container">
-                <span className="message-username">{username}:</span>
-              </div>
+            {/* <div className="input-container">
               <input
                 type="text"
                 value={inputMessage}
@@ -251,9 +246,39 @@ function App() {
                 <button className="send-image-button" onClick={handleSendImage}>
                   <i className="fas fa-image"></i>
                 </button>
+
               </div>
+
               <button onClick={handleSendMessage}>Send</button>
-            </div>
+
+            </div> */}
+
+<div className="input-container">
+  <div className="username-container">
+    <span className="message-username">{username}:</span>
+  </div>
+  <input
+    type="text"
+    value={inputMessage}
+    onChange={(e) => setInputMessage(e.target.value)}
+    onKeyDown={handleKeyDown}
+    placeholder="Type your message..."
+  />
+  <div className="file-input-wrapper">
+    <input
+      type="file"
+      accept=".jpeg, .png, .jpg"
+      className="file-input"
+      onChange={(e) => handleImageChange(e)}
+    />
+    <button className="send-image-button" onClick={handleSendImage}>
+      <i className="fas fa-image"></i>
+    </button>
+  </div>
+  <button onClick={handleSendMessage}>Send</button>
+</div>
+
+
           </div>
           <div className="user-history">
             <h2>User History</h2>
