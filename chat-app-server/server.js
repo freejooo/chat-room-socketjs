@@ -13,7 +13,7 @@ const server = http.createServer(app);
 
 const io = socketIO(server, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: 'http://localhost:3001',
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -27,11 +27,13 @@ mongoose
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('Error connecting to MongoDB:', err));
 
-const chatMessageSchema = new mongoose.Schema({
-  username: String,
-  message: String,
-  timestamp: { type: Date, default: Date.now },
-});
+  const chatMessageSchema = new mongoose.Schema({
+    username: String,
+    message: String,
+    image: String, // Add this line
+    timestamp: { type: Date, default: Date.now },
+  });
+  
 const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
 
 const activeUsers = new Set();
