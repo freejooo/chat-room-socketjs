@@ -4,6 +4,10 @@ import './App.css';
 import Linkify from 'react-linkify';
 import ReactLinkPreview from 'react-link-preview';
 import { BrowserRouter as Router } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faImage } from '@fortawesome/free-solid-svg-icons';
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUpload } from '@fortawesome/free-solid-svg-icons';
 
 const socket = io('http://localhost:3002');
 
@@ -121,7 +125,6 @@ function App() {
         >
           {message.username !== username && (
             <Linkify className="linkify-link">{message.message}</Linkify>
-
           )}
           <div className="message-content">
             <img
@@ -133,42 +136,41 @@ function App() {
           </div>
         </div>
       );
-    } 
-      else if (url) {
-        return (
-          <div
-            className={`message-container ${
-              message.username === username ? 'current-user' : 'other-user'
-            }`}
-          >
-            {message.username !== username && (
-              <Linkify className="linkify-link">
-                <span className="red-link">{message.message}</span>
-              </Linkify>
-            )}
-            <div className="message-content">
-              <Linkify>{message.message}</Linkify>
-              <ReactLinkPreview url={url[0]} />
-            </div>
+    } else if (url) {
+      return (
+        <div
+          className={`message-container ${
+            message.username === username ? 'current-user' : 'other-user'
+          }`}
+        >
+          {message.username !== username && (
+            <Linkify className="linkify-link">
+              <span className="red-link">{message.message}</span>
+            </Linkify>
+          )}
+          <div className="message-content">
+            <Linkify>{message.message}</Linkify>
+            <ReactLinkPreview url={url[0]} />
           </div>
-        );
-      } else {
-        return (
-          <div
-            className={`message-container ${
-              message.username === username ? 'current-user' : 'other-user'
-            }`}
-          >
-            {message.username !== username && (
-              <span className="message-username">{message.username}:</span>
-            )}
-            <div className="message-content">
-              <Linkify className="red-link">{message.message}</Linkify>
-            </div>
+        </div>
+      );
+    } else {
+      return (
+        <div
+          className={`message-container ${
+            message.username === username ? 'current-user' : 'other-user'
+          }`}
+        >
+          {message.username !== username && (
+            <span className="message-username">{message.username}:</span>
+          )}
+          <div className="message-content">
+            <Linkify className="red-link">{message.message}</Linkify>
           </div>
-        );
-      }
-    };
+        </div>
+      );
+    }
+  };
 
   useEffect(() => {
     const updateActiveUsers = () => {
@@ -191,19 +193,18 @@ function App() {
       console.log('No file selected');
       return;
     }
-  
+
     let reader = new FileReader();
     reader.onload = (e) => {
       setSelectedImage(e.target.result);
     };
-  
+
     reader.onerror = (error) => {
       console.log('Error reading file:', error);
     };
-  
+
     reader.readAsDataURL(files[0]);
   };
-  
 
   const handleSendImage = () => {
     if (selectedImage) {
@@ -249,7 +250,7 @@ function App() {
             <div className="chat">
               <div className="message-list" ref={messageListRef}>
                 {loadingMessages ? (
-                  <p>Loading messages...</p>
+<p>Loading messages...</p>
                 ) : messages.length > 0 ? (
                   messages.map((message, index) => (
                     <div key={index} className="message">
@@ -271,20 +272,21 @@ function App() {
                   onKeyDown={handleKeyDown}
                   placeholder="Type your message..."
                 />
-                <div className="file-input-wrapper">
-                  <input
-                    type="file"
-                    accept=".jpeg, .png, .jpg"
-                    className="file-input"
-                    onChange={(e) => handleImageChange(e)}
-                  />
-                  <button
-                    className="send-image-button"
-                    onClick={handleSendImage}
-                  >
-                    <i className="fas fa-image"></i>
-                  </button>
-                </div>
+              <div className="file-input-wrapper">
+  <label htmlFor="file-input" className="file-input-label">
+    <FontAwesomeIcon icon={faUpload} className="upload-icon" />
+  </label>
+  <input
+    type="file"
+    accept=".jpeg, .png, .jpg"
+    id="file-input"
+    className="file-input"
+    onChange={(e) => handleImageChange(e)}
+  />
+  <button className="send-image-button" onClick={handleSendImage}>
+    <i className="fas fa-image"></i>
+  </button>
+</div>
                 <button onClick={handleSendMessage}>Send</button>
               </div>
             </div>
