@@ -11,6 +11,7 @@ function App() {
   const [activeUsers, setActiveUsers] = useState([]);
   const [userHistory, setUserHistory] = useState([]);
   const messageListRef = useRef(null);
+  const inputContainerRef = useRef(null);
   const [chatStarted, setChatStarted] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
 
@@ -61,7 +62,8 @@ function App() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        setMessages(data.reverse());
+        const limitedMessages = data.slice(-50); // Limiting messages to the last 50
+        setMessages(limitedMessages);
         scrollToBottom();
       } catch (error) {
         console.error('Fetching messages failed: ', error);
@@ -69,14 +71,17 @@ function App() {
         setLoadingMessages(false);
       }
     };
-
+  
     if (chatStarted) {
       fetchMessages();
     }
   }, [chatStarted]);
+  
 
   const scrollToBottom = () => {
-    messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
+    if (messageListRef.current) {
+      messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
+    }
   };
 
   const handleSendMessage = () => {
@@ -89,9 +94,30 @@ function App() {
       socket.emit('chat message', message);
 
       setInputMessage('');
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSendMessage();
       scrollToBottom();
     }
   };
+
+  useEffect(() => {
+    const updateActiveUsers = () => {
+      const activeUsernames = userHistory
+        .filter((user) => user.status === 'connected')
+        .map((user) => user.username);
+      setActiveUsers(activeUsernames);
+    };
+
+    updateActiveUsers();
+  }, [userHistory]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   return (
     <div className="app">
@@ -125,8 +151,8 @@ function App() {
               {loadingMessages ? (
                 <p>Loading messages...</p>
               ) : messages.length > 0 ? (
-                messages.map((message) => (
-                  <div key={message._id} className="message">
+                messages.map((message, index) => (
+                  <div key={index} className="message">
                     <span className="message-username">{message.username}:</span>{' '}
                     <span className="message-content">{message.message}</span>
                   </div>
@@ -135,11 +161,12 @@ function App() {
                 <p>No messages</p>
               )}
             </div>
-            <div className="input-container">
+            <div className="input-container" ref={inputContainerRef}>
               <input
                 type="text"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
                 placeholder="Type your message..."
               />
               <button onClick={handleSendMessage}>Send</button>

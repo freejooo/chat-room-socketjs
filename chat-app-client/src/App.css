@@ -1,4 +1,64 @@
 /* App.css */
+/* App.css */
+
+:root {
+  --light-bg: #f5f5f5;
+  --dark-bg: #282c34;
+  --light-btn: #007bff;
+  --dark-btn: #0069d9;
+  --transition-duration: 0.3s;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: var(--light-bg);
+  transition: background-color var(--transition-duration);
+}
+
+.light-theme {
+  background-color: var(--light-bg);
+}
+
+.dark-theme {
+  background-color: var(--dark-bg);
+}
+
+.button {
+  padding: 8px 16px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--transition-duration);
+}
+
+.light-theme .button {
+  background-color: var(--light-btn);
+  color: #fff;
+}
+
+.dark-theme .button {
+  background-color: var(--dark-btn);
+  color: #fff;
+}
+
+.button:hover {
+  opacity: 0.8;
+}
+
+/* rest of your css */
+/* .start-chat, .chat-container, .sidebar, .chat, etc. */
 
 .app {
   display: flex;
@@ -122,4 +182,73 @@
 
 .input-container button:hover {
   background-color: #0069d9;
+}
+
+.chat-container {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  flex: 0 0 200px;
+  background: #f2f2f2;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background: #ffffff;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background: #f2f2f2;
+  position: sticky;
+  bottom: 0;
+}
+
+.input-container input {
+  flex: 1;
+  height: 30px;
+  margin-right: 10px;
+  padding: 5px;
+  border: none;
+}
+
+.input-container button {
+  height: 30px;
+  padding: 0 10px;
+  border: none;
+  background: #337ab7;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.user-history {
+  flex: 0 0 200px;
+  background: #f2f2f2;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.user-history ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.user-history li {
+  margin-bottom: 10px;
 }
