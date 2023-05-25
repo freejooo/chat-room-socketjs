@@ -10,14 +10,23 @@ const app = express();
 app.use(cors());
 
 const server = http.createServer(app);
+const allowedOrigins = ['http://0.0.0.0:3000'];
 
 const io = socketIO(server, {
   cors: {
-    origin: 'http://localhost:3001',
+    origin: function (origin, callback) {
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST'],
     credentials: true,
   },
 });
+
+
 
 mongoose
   .connect('mongodb://localhost/chat-app', {
